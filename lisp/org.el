@@ -5165,7 +5165,7 @@ This includes angle, plain, and bracket links."
 	    (org-remove-flyspell-overlays-in start end)
 	    (org-rear-nonsticky-at end)
 	    (if (not (eq 'bracket style))
-		(add-text-properties start end properties)
+		(org--append-face-and-props start end properties)
 	      ;; Handle invisible parts in bracket links.
 	      (remove-text-properties start end '(invisible nil))
 	      (let ((hidden
@@ -5174,7 +5174,7 @@ This includes angle, plain, and bracket links."
 				    'org-link))
 			     properties)))
 		(add-text-properties start visible-start hidden)
-		(add-text-properties visible-start visible-end properties)
+		(org--append-face-and-props visible-start visible-end properties)
 		(add-text-properties visible-end end hidden)
 		(org-rear-nonsticky-at visible-start)
 		(org-rear-nonsticky-at visible-end)))
@@ -5183,6 +5183,12 @@ This includes angle, plain, and bracket links."
 		(funcall f start end path (eq style 'bracket))))
 	    (throw :exit t)))))		;signal success
     nil))
+
+(defun org--append-face-and-props (start end properties)
+  (let ((face (plist-get properties 'face))
+	(new-props (org-plist-delete properties 'face)))
+    (add-text-properties start end new-props)
+    (add-face-text-property start end face)))
 
 (defun org-activate-code (limit)
   (when (re-search-forward "^[ \t]*\\(:\\(?: .*\\|$\\)\n?\\)" limit t)
@@ -5630,7 +5636,7 @@ needs to be inserted at a specific position in the font-lock sequence.")
 	   '(org-activate-links)
 	   (when (memq 'tag lk) '(org-activate-tags (1 'org-tag prepend)))
 	   (when (memq 'radio lk) '(org-activate-target-links (1 'org-link t)))
-	   (when (memq 'date lk) '(org-activate-dates (0 'org-date t)))
+	   (when (memq 'date lk) '(org-activate-dates (0 'org-date prepend)))
 	   (when (memq 'footnote lk) '(org-activate-footnote-links))
            ;; Targets.
            (list org-radio-target-regexp '(0 'org-target t))
