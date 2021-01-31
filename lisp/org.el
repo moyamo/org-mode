@@ -12854,6 +12854,25 @@ strings."
 	  ;; Return value.
 	  props)))))
 
+(defun org-entry-property-with-inheritance (property)
+  "Get org special property with name PROPERTY at point, search higher levels if needed."
+  ;; See org-entry-get-with-inheritance
+  ;; Things to consider:
+  ;; 1) With what special properties does this make sense
+  ;; 2) What happens when the property is nil. Should I do literal nil?
+  ;; 3) Are there global values for special properties?
+  ;; 4) Should we be smarter? Take the minimum deadline and maximum schedule?
+  (org-with-wide-buffer
+   (catch 'exit
+     (while t
+       (let ((v (assoc-string property (org-entry-properties nil property))))
+	 (cond
+	  (v (throw 'exit (cdr v)))
+	  ((org-up-heading-or-point-min))
+	  (t (throw 'exit nil)) 	; Are there global special properties?
+	  ))))))
+
+
 (defun org--property-local-values (property literal-nil)
   "Return value for PROPERTY in current entry.
 Value is a list whose car is the base value for PROPERTY and cdr
@@ -12912,7 +12931,10 @@ value higher up the hierarchy."
      ((member-ignore-case property (cons "CATEGORY" org-special-properties))
       ;; We need a special property.  Use `org-entry-properties' to
       ;; retrieve it, but specify the wanted property.
-      (cdr (assoc-string property (org-entry-properties nil property))))
+      (if (and inherit
+	       (or (not (eq inherit 'selective)) (org-property-inherit-p property)))
+	  (org-entry-property-with-inheritance property)
+	(cdr (assoc-string property (org-entry-properties nil property)))))
      ((and inherit
 	   (or (not (eq inherit 'selective)) (org-property-inherit-p property)))
       (org-entry-get-with-inheritance property literal-nil))

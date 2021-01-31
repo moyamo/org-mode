@@ -5425,7 +5425,7 @@ and the timestamp type relevant for the sorting strategy in
 		   ts-date-type " scheduled"))
 	    ((org-em 'deadline-up 'deadline-down
 		     org-agenda-sorting-strategy-selected)
-	     (setq ts (org-entry-get pom "DEADLINE")
+	     (setq ts (org-entry-get pom "DEADLINE" t)
 		   ts-date-type " deadline"))
 	    ((org-em 'ts-up 'ts-down
 		     org-agenda-sorting-strategy-selected)
@@ -5438,7 +5438,7 @@ and the timestamp type relevant for the sorting strategy in
 	    ((org-em 'timestamp-up 'timestamp-down
 		     org-agenda-sorting-strategy-selected)
 	     (setq ts (or (org-entry-get pom "SCHEDULED")
-			  (org-entry-get pom "DEADLINE")
+			  (org-entry-get pom "DEADLINE" t)
 			  (org-entry-get pom "TIMESTAMP")
 			  (org-entry-get pom "TIMESTAMP_IA"))
 		   ts-date-type ""))
@@ -6308,7 +6308,7 @@ scheduled items with an hour specification like [h]h:mm."
 	       (habitp (and (fboundp 'org-is-habit-p) (org-is-habit-p)))
 	       (suppress-delay
 		(let ((deadline (and org-agenda-skip-scheduled-delay-if-deadline
-				     (org-entry-get nil "DEADLINE"))))
+				     (org-entry-get nil "DEADLINE" t))))
 		  (cond
 		   ((not deadline) nil)
 		   ;; The current item has a deadline date, so
